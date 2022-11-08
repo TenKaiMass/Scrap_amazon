@@ -9,7 +9,7 @@ url = f"https://www.amazon.fr/s?k={produit}&i=electronics&page=1"
 
 def get_date(url):
     r = session.get(url)
-    r.html.render (sleep=1)
+    r.html.render(sleep=1)
     soup = BeautifulSoup(r.html. html, 'html.parser')
     return soup
 
@@ -32,7 +32,12 @@ def getMytitleProduct(url):
     for item in page.find('div', {'class' : 's-main-slot s-result-list s-search-results sg-row'}).findAll({'div'}) : 
         if item.get("data-component-type") :
             title = item.find('a', {'class': 'a-link-normal s-underline-text s-underline-link-text s-link-style a-text-normal'}).text.strip()[:25]
-            print(title,"\n-------")
+            price = item.find('span',{'class': 'a-price-whole'}).text.strip()
+            try:
+                avis = item.find('span',{'class': 'a-size-base puis-light-weight-text s-link-centralized-style'}).text.strip()
+            except AttributeError:
+                avis = 0
+            print(title, f"Price : {price}; Avis : {avis}\n-------")
 #res = get_date(url)
 #getdeals(res)
 

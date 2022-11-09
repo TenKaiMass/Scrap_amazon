@@ -48,19 +48,21 @@ def getDataframeFromAmazon(url : str,proxies: map):
             list_nom.append(title)
             try:
                 price = item.find('span',{'class': 'a-price-whole'}).text.strip().replace(',','.')
-            except AttributeError:
-                price = 0
+            except AttributeError or ValueError:
+                price = float(0)
             list_prix.append(price)
             try:
                 avis = item.find('span',{'class': 'a-size-base puis-light-weight-text s-link-centralized-style'}).text.strip()
+                avis = int("".join(avis.split()))
             except AttributeError:
                 avis = 0
             list_avis.append(avis)
             try:
                 stars = float(item.find('span',{'class':'a-icon-alt'}).text.strip()[:3].replace(',','.'))
-            except AttributeError:
-                stars = 0
+            except AttributeError or ValueError:
+                stars = float(0)
             list_note.append(stars)
+        
             #print(title, f"Price : {price}; Avis : {avis}; stars : {stars}\n-------")
     df = pandas.DataFrame.from_dict( {"Product" : list_nom, "Prix" : list_prix, "Nombre_avis" : list_avis, "Note" : list_note})
     return df
@@ -70,9 +72,10 @@ def regroupDf(proxies,produit):
     for num in range(5):
         url = f"https://www.amazon.fr/s?k={produit}&i=electronics&page={str(num+1)}"
         #print(f"page {num+1}:\n")
-        tab.append(getDataframeFromAmazon(url,proxies))
+        df_tmp = getDataframeFromAmazon(url,proxies)
+        tab.append(df_tmp)
 
-    df = pandas.concat(tab, sort=False)
+    df = pandas.concat(tab,ignore_index=True)
     return df
 
 
@@ -81,5 +84,5 @@ def toCsv(df : pandas.DataFrame, path : str):
 
 df = regroupDf(proxies,produit)
 
-#toCsv(df=df,path="dataset/myDataset.csv")
+#toCsv(df=df,path="dataset/myDataset2.csv")
 

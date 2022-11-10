@@ -27,6 +27,20 @@ Il met donc les données en forme avec un graph permettant de trouvé les meille
 width="800"
 height="600">
 
+# Utilisation
+l'appication se lance pour le moment avec 
+```bash
+python app.py
+```
+Plusieurs possibilité s'offre à vous :
+- vous pouvez scraper les données sur amazon
+- ou utiliser le dataset disponible qui à été implementé par scraping
+
+> des questions vous seront poser afin de vous guider 
+> La partie scraping rencontre parfois un soucis sur une données particulières, il faudra alors relancer le programme, une simple boucle de requet ne fonctionne pas
+
+
+
 
 
 

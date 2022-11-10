@@ -1,5 +1,4 @@
 import os.path
-from time import sleep
 
 from bs4 import BeautifulSoup
 from requests_html import HTMLSession
@@ -8,14 +7,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def getPageRH(url : str,proxies : map):
+def getPageRH(url : str,session):
     response = session.get(url,timeout=2)
     response.html.render(sleep=1)
     soup = BeautifulSoup(response.html. html, 'html.parser')
     return soup
 
-def getMytitleProduct(url : str,proxies: map):
-    page = getPageRH(url,proxies)
+def getMytitleProduct(url : str):
+    page = getPageRH(url)
     for item in page.find('div', {'class' : 's-main-slot s-result-list s-search-results sg-row'}).findAll({'div'}) : 
         if item.get("data-component-type") :
             title = item.find('a', {'class': 'a-link-normal s-underline-text s-underline-link-text s-link-style a-text-normal'}).text.strip()[:25]
@@ -33,12 +32,12 @@ def getMytitleProduct(url : str,proxies: map):
                 stars = 0
             print(title, f"Price : {price}; Avis : {avis}; stars : {stars}\n-------")
 
-def getDataframeFromAmazon(url : str,proxies: map):
+def getDataframeFromAmazon(url : str,session):
     list_avis = []
     list_nom = []
     list_prix = []
     list_note = []
-    page = getPageRH(url,proxies)
+    page = getPageRH(url,session)
     for item in page.find('div', {'class' : 's-main-slot s-result-list s-search-results sg-row'}).findAll({'div'}) : 
         if item.get("data-component-type") :
             title = item.find('a', {'class': 'a-link-normal s-underline-text s-underline-link-text s-link-style a-text-normal'}).text.strip()[:25]
@@ -63,19 +62,19 @@ def getDataframeFromAmazon(url : str,proxies: map):
     df = pandas.DataFrame.from_dict( {"Product" : list_nom, "Prix" : list_prix, "Nombre_avis" : list_avis, "Note" : list_note})
     return df
 
-def regroupDf(proxies,produit):
+def regroupDf(produit,session):
     tab = []
     for num in range(5):
         url = f"https://www.amazon.fr/s?k={produit}&page={str(num+1)}"
         print(f"page {num+1}:\n Recuperation des données :\n")
-        df_tmp = getDataframeFromAmazon(url,proxies)
+        df_tmp = getDataframeFromAmazon(url,session)
         tab.append(df_tmp)
     df = pandas.concat(tab,ignore_index=True)
     return df
 
-def scraping(proxies,produit):
+def scraping(produit,session):
 
-    df = regroupDf(proxies,produit)
+    df = regroupDf(produit,session)
     if df['Nombre_avis'].max() == 0:
         print("problème sur la recuperation des data de type avis nous allons refaire la requete...")
         valide = 0
@@ -150,23 +149,23 @@ def affichageGraph(df,produit):
     plt.title(f'Les {produit} les plus noté selon leur note sur Amazon')
     plt.show()
 
-session = HTMLSession()
-# rentrer mnuellement a l'avenir
-produit="camera+vlog"
-headers = {"user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_16_0) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/71.0.3542.0 Safari/537.36"}
-url_test =  "https://httpbin.org/user-agent"
-proxies = {
-"http": "http://49.0.2.242:8090",
-"https": "https://49.0.2.242:8090",
 
- }
+
+
+#produit="camera+vlog"
+headers = {"user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_16_0) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/71.0.3542.0 Safari/537.36"}
+url_test =  "https://httpbin.org/ip"
+
 def start():
     q = input("Voulez vous scraper les donnée (n = utiliser un fichier pour afficher son graph) ? (y/n) : ")
     if q == 'y':
-       scraping(proxies,produit)
+        produit = input("Veuillez entrer le produit recherche <nom+extension> : ")
+        session = HTMLSession()
+        scraping(produit,session)
     else:
         valide = 0
         path = input('Entrez le nom du fichier : ')
+        produit = input("Veuillez entrer le nom du produit du csv : ")
         while valide == 0:
             try:
                 df = pandas.read_csv(f"dataset/{path}")
@@ -178,5 +177,8 @@ def start():
                 affichageGraph(df,produit)
 
 start()
-exit(0)
+
+
+
+
 
